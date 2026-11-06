@@ -14,8 +14,13 @@ void Components::getrom() {
 		Rom.read(contents, size);
 		Rom.close();
 
+		for (auto i = 0; i < sizeof(characters_fonts); ++i)
+			memory[i] = characters_fonts[i];
+
 		for (auto i = 0; i < size; ++i) {
-			printf("\\x%.2x", contents[i]);
+			memory[0x200 + i] = contents[i];
+			printf("\\x%.2x", memory[0x200 + i]);
+			
 		}
 
 		delete[] contents;
