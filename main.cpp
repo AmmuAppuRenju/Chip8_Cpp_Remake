@@ -13,12 +13,17 @@ int main(int argc, char *argv[]) {
 
 	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
+	std::vector<uint32_t> pixels(64 * 32, 0x00000000);
+	for(auto i = 0; i < pixels.size(); i++){
+		if (i % 2 == 0) {
+			/*make sure 8 values for colors
+			first two Red, second two Green, third two Blue, last two Alpha*/
+			pixels[i] = 0xffffffff;
+		}
+	}
 
-	std::vector<uint32_t> pixels(64 * 32, 0x394dfe80);
 	SDL_UpdateTexture(texture, nullptr, pixels.data(), 64 * sizeof(uint32_t));
-
+	SDL_RenderClear(renderer);
 
 	SDL_RenderTexture(renderer, texture, nullptr, nullptr);
 	
