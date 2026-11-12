@@ -4,15 +4,24 @@
 #define CPU_H
 
 #include <string>
+#include <stack>
 
 class Components
 {
 public:
+	SDL_Renderer* renderer;
+	SDL_Texture* texture;
+
+	Components(SDL_Renderer *r, SDL_Texture *t) {
+		renderer = r;
+		texture = t;
+	}
+
 	int display[2] = {64, 32};
 	uint8_t memory[4096]{};
 	uint16_t PC = 0x200; // or 512
 	uint16_t I = 0;
-	uint16_t stack[16]{};
+	std::stack<uint16_t> stack[16]{};
 	uint8_t delaytimer;
 	uint8_t soundtimer;
 	uint8_t V[16]{};
