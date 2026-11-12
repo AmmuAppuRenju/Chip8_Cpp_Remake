@@ -29,14 +29,14 @@ void Components::getrom(const char* rom_path) {
 }
 
 void Components::gameLoop(){
-	int8_t byte1 = memory[PC];
-	int8_t byte2 = memory[PC + 1];
+	uint8_t *byte1 = &memory[PC];
+	uint8_t *byte2 = &memory[PC + 1];
 
-	int16_t opcode = (byte1 << 8) | byte2;
+	uint16_t opcode = (*byte1 << 8) | *byte2;
 
 	opchecker(opcode);
 
-	//printf("\\x%.04x\n", opcode);
+	printf("\\x%.04x\n", opcode);
 }
 
 void Components::opchecker(int16_t opcode) {
