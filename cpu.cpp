@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <stack>
 #include <cstdlib>
 #include <SDL3/SDL.h>
 #include "cpu.hpp"
@@ -22,6 +22,11 @@ void Components::getrom(const char* rom_path) {
 
 		for (auto i = 0; i < size; ++i)
 			memory[0x200 + i] = contents[i];
+
+		//init_stack
+		for (int i = 0; i < 16; ++i) {
+			stack->push(0);
+		}
 		
 
 		delete[] contents;
@@ -38,7 +43,7 @@ void Components::gameLoop(int fps){
 
 	opchecker(&opcode);
 
-	/*printf("\\x%.04x\n", opcode);*/
+	printf("\\x%.04x\n", opcode);
 
 	SDL_Delay(1000/fps);
 }
@@ -59,13 +64,12 @@ void Components::opchecker(uint16_t* opcode) {
 	uint16_t NNN = *opcode & 0x0fff;
 
 
-
 	if (*opcode == 0x00E0) {
-		std::cout << "Clear Screen\n";
+		/*std::cout << "Clear Screen\n";*/
 		for (auto i : pixels) i = 0;
 	}
 	if (*opcode == 0x00EE) {
-		std::cout << "Subroutine\n";
+		/*std::cout << "Subroutine\n";*/
 		PC = stack->top();
 		stack->pop();
 	}
@@ -78,7 +82,7 @@ void Components::opchecker(uint16_t* opcode) {
 		}
 
 		case 0x2: {
-			PC = stack->top();
+			stack->push(PC);
 			PC = NNN - 2;
 			break;
 		}
@@ -102,13 +106,13 @@ void Components::opchecker(uint16_t* opcode) {
 		}
 
 		case 0x6: {
-			std::cout << "set register VX\n";
+			/*std::cout << "0x6: set register VX\n";*/
 			V[X] = NN;
 			break;
 		}
 
 		case 0x7: {
-			std::cout << "added value to register VX\n";
+			/*std::cout << "0x7: added value to register VX\n";*/
 			V[X] = (V[X] + NN) & 0xFF;
 			break;
 		}
@@ -178,7 +182,7 @@ void Components::opchecker(uint16_t* opcode) {
 		}
 
 		case 0xA: {
-			std::cout << "added value to register VX\n";
+			/*std::cout << "0xA: added value to register VX\n";*/
 			I = NNN;
 			break;
 		}
@@ -244,6 +248,61 @@ void Components::opchecker(uint16_t* opcode) {
 						PC += 2;
 					break;
 				}
+			break;
+		}
+
+		case 0xF: {
+			switch (NN){
+				case 0x07: {
+					V[X] = delaytimer;
+					break;
+				}
+
+				case 0x15: {
+					delaytimer = V[X];
+					break;
+				}
+
+				case 0x18: {
+					soundtimer = V[X];
+					break;
+				}
+
+				case 0x1E: {
+					I += V[X];
+					break;
+				}
+
+				case 0x29: {
+					//characters_fonts starts at 0 in memory
+					I = V[X] * 5;
+					break;
+				}
+
+				case 0x33: {
+					uint8_t val = V[X];
+					memory[I + 2] = val % 10;
+					val /= 10;
+					memory[I + 1] = val % 10;
+					val /= 10;
+					memory[I] = val % 10;
+
+					break;
+				}
+
+				case 0x55: {
+					for (auto i = 0; i < X + 1; i++)
+						memory[I + i] = V[i];
+					break;
+				}
+
+				case 0x65:{
+					for (auto i = 0; i < X + 1; i++)
+						V[i] = memory[I + i];
+					break;
+				}
+
+			}
 			break;
 		}
 	}

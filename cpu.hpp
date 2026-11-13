@@ -21,8 +21,8 @@ public:
 	uint32_t pixels[64 * 32]{};
 
 	uint8_t memory[4096]{};
+	std::stack<uint16_t> stack[16];
 	uint8_t V[16]{};
-	std::stack<uint16_t> stack[16]{};
 
 	uint16_t PC = 0x200; // or 512
 	uint16_t I = 0;
