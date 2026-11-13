@@ -69,26 +69,42 @@ void Components::opchecker(int16_t opcode) {
 			//std::cout << "Jump\n";
 			PC = NNN - 2;
 			break;
+
 		case 0x2:
 			PC = stack->top();
 			PC = NNN - 2;
 			break;
+
 		case 0x3:
 			if (V[X] == NN)
 				PC += 2;
 			break;
+
+		case 0x4:
+			if (V[X] != NN)
+				PC += 2;
+			break;
+
+		case 0x5:
+			if (V[X] == V[Y])
+				PC += 2;
+			break;
+
 		case 0x6:
 			std::cout << "set register VX\n";
 			V[X] = NN;
 			break;
+
 		case 0x7:
 			std::cout << "add value to register VX\n";
 			V[X] = (V[X] + NN) & 0xFF;
 			break;
+
 		case 0xA:
 			std::cout << "add value to register VX\n";
 			I = NNN;
 			break;
+
 		case 0xD:
 			uint16_t x = V[X] % display[0];
 			uint16_t y = V[Y] % display[1];
@@ -97,22 +113,25 @@ void Components::opchecker(int16_t opcode) {
 
 			for (uint8_t row = 0; row < N; ++row) {
 				uint8_t spriteByte = memory[I + row];
-				uint8_t currenty = (y + row);
-				if (currenty >= display[1]) break;
+				uint16_t currenty = (y + row);
+
+				if (currenty >= display[1]) 
+					continue;
 
 				for (uint8_t col = 0; col < 8; ++col) {
-					uint8_t currentx = (x + col);
-					if (currentx >= display[0]) break;
+					uint16_t currentx = (x + col);
+
+					if (currentx >= display[0]) 
+						continue;
 
 					uint8_t spriteBit = (spriteByte & (0x80 >> col));
-					uint32_t* screenPixel = &pixels[currenty * display[0] + currentx];
+					uint32_t* pixel = &pixels[currenty * display[0] + currentx];
 
 					if (spriteBit) {
-						if (*screenPixel == 0xFFFFFFFF) {
+						if (*pixel == 0xFFFFFFFF) {
 							V[0xF] = 1;
 						}
-
-						*screenPixel = 0xFFFFFFFF;
+						*pixel = 0xFFFFFFFF;
 						std::cout << "Drew pixel at (" << x << ", " << y << "). \n";
 					}
 				}
