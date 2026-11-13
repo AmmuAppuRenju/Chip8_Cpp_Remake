@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 	//Chip 8 logic
 	Components components(renderer, texture);
 
-	components.getrom("IBM Logo.ch8");
+	components.getrom("test_opcode.ch8");
 	bool running = true;
 	while (running) {
 

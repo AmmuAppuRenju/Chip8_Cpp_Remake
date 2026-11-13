@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstdlib>
 #include <SDL3/SDL.h>
 #include "cpu.hpp"
 
@@ -57,6 +58,8 @@ void Components::opchecker(uint16_t* opcode) {
 
 	uint16_t NNN = *opcode & 0x0fff;
 
+
+
 	if (*opcode == 0x00E0) {
 		std::cout << "Clear Screen\n";
 		for (auto i : pixels) i = 0;
@@ -68,47 +71,129 @@ void Components::opchecker(uint16_t* opcode) {
 	}
 
 	switch (first_value) {
-		case 0x1:
+		case 0x1: {
 			/*std::cout << "Jump\n";*/
 			PC = NNN - 2;
 			break;
+		}
 
-		case 0x2:
+		case 0x2: {
 			PC = stack->top();
 			PC = NNN - 2;
 			break;
+		}
 
-		case 0x3:
+		case 0x3: {
 			if (V[X] == NN)
 				PC += 2;
 			break;
+		}
 
-		case 0x4:
+		case 0x4: {
 			if (V[X] != NN)
 				PC += 2;
 			break;
+		}
 
-		case 0x5:
+		case 0x5: {
 			if (V[X] == V[Y])
 				PC += 2;
 			break;
+		}
 
-		case 0x6:
+		case 0x6: {
 			std::cout << "set register VX\n";
 			V[X] = NN;
 			break;
+		}
 
-		case 0x7:
+		case 0x7: {
 			std::cout << "added value to register VX\n";
 			V[X] = (V[X] + NN) & 0xFF;
 			break;
+		}
 
-		case 0xA:
+		case 0x8: {
+			switch (N) {
+				case 0: {
+					V[X] = V[Y];
+					break;
+				}
+				case 1: {
+					V[X] = V[X] | V[Y];
+					break;
+				}
+				case 2: {
+					V[X] = V[X] & V[Y];
+					break;
+				}
+				case 3: {
+					V[X] = V[X] ^ V[Y];
+					break;
+				}
+				case 4: {
+					uint16_t sum = V[X] + V[Y];
+					V[X] = sum & 0xFF;
+					if (sum > 255)
+						V[0xF] = 1;
+					else
+						V[0xF] = 0;
+					break;
+				}
+				case 5: {
+					if (V[X] > V[Y])
+						V[0xF] = 1;
+					else {
+						V[0xF] = 0;
+						V[X] = (V[X] - V[Y]) & 0xFF;
+					}
+					break;
+				}
+				case 6: {
+					V[0xF] = V[X] & 0x1;
+					V[X] = V[X] >> 1;
+					break;
+				}
+				case 7: {
+					if (V[Y] > V[X])
+						V[0xF] = 1;
+					else
+						V[0xF] = 0;
+					V[X] = (V[Y] - V[X]) & 0xFF;
+					break;
+				}
+				case 0xE: {
+					V[0xF] = (V[X] & 0x80) >> 7;
+					V[X] = (V[X] << 1) & 0xFF;
+					break;
+				}
+			}
+			break;
+		}
+
+		case 0x9: {
+			if (V[X] != V[Y])
+				PC += 2;
+			break;
+		}
+
+		case 0xA: {
 			std::cout << "added value to register VX\n";
 			I = NNN;
 			break;
+		}
 
-		case 0xD:
+		case 0xB: {
+			PC = NNN + V[0];
+			break;
+		}
+
+		case 0xC: {
+			V[X] = rand() % 256 & NN;
+			break;
+		}
+
+		case 0xD: {
 			uint16_t x = V[X] % display[0];
 			uint16_t y = V[Y] % display[1];
 
@@ -118,13 +203,13 @@ void Components::opchecker(uint16_t* opcode) {
 				uint8_t spriteByte = memory[I + row];
 				uint16_t currenty = (y + row);
 
-				if (currenty >= display[1]) 
+				if (currenty >= display[1])
 					continue;
 
 				for (uint8_t col = 0; col < 8; ++col) {
 					uint16_t currentx = (x + col);
 
-					if (currentx >= display[0]) 
+					if (currentx >= display[0])
 						continue;
 
 					uint8_t spriteBit = (spriteByte & (0x80 >> col));
@@ -146,6 +231,23 @@ void Components::opchecker(uint16_t* opcode) {
 			SDL_RenderPresent(renderer);
 
 			break;
+		}
+
+		case 0xE: {
+			switch (NN) {
+				case 0x9E:
+					if (keys[V[X]])
+						PC += 2;
+					break;
+				case 0xA1:
+					if (!keys[V[X]])
+						PC += 2;
+					break;
+				}
+			break;
+		}
 	}
+
 	PC += 2;
+
 }
