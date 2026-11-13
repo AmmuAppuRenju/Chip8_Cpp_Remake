@@ -22,11 +22,6 @@ void Components::getrom(const char* rom_path) {
 
 		for (auto i = 0; i < size; ++i)
 			memory[0x200 + i] = contents[i];
-
-		//init_stack
-		for (int i = 0; i < 16; ++i) {
-			stack->push(0);
-		}
 		
 
 		delete[] contents;
@@ -41,9 +36,12 @@ void Components::gameLoop(int fps){
 
 	uint16_t opcode = (*byte1 << 8) | *byte2;
 
+	if (delaytimer > 0)
+		delaytimer -= 1;
+
 	opchecker(&opcode);
 
-	printf("\\x%.04x\n", opcode);
+	/*printf("\\x%.04x\n", opcode);*/
 
 	SDL_Delay(1000/fps);
 }
@@ -66,7 +64,7 @@ void Components::opchecker(uint16_t* opcode) {
 
 	if (*opcode == 0x00E0) {
 		/*std::cout << "Clear Screen\n";*/
-		for (auto i : pixels) i = 0;
+		memset(pixels, 0, sizeof(pixels));
 	}
 	if (*opcode == 0x00EE) {
 		/*std::cout << "Subroutine\n";*/
@@ -147,10 +145,9 @@ void Components::opchecker(uint16_t* opcode) {
 				case 5: {
 					if (V[X] > V[Y])
 						V[0xF] = 1;
-					else {
+					else
 						V[0xF] = 0;
-						V[X] = (V[X] - V[Y]) & 0xFF;
-					}
+					V[X] = (V[X] - V[Y]) & 0xFF;
 					break;
 				}
 				case 6: {
@@ -188,7 +185,7 @@ void Components::opchecker(uint16_t* opcode) {
 		}
 
 		case 0xB: {
-			PC = NNN + V[0];
+			PC = (NNN + V[0]) - 2;
 			break;
 		}
 
@@ -223,7 +220,7 @@ void Components::opchecker(uint16_t* opcode) {
 						if (*pixel == 0xFFFFFFFF) {
 							V[0xF] = 1;
 						}
-						*pixel = 0xFFFFFFFF;
+						*pixel ^= 0xFFFFFFFF;
 						/*std::cout << "Drew pixel at (" << currentx << ", " << currenty << "). \n";*/
 					}
 				}
@@ -253,6 +250,43 @@ void Components::opchecker(uint16_t* opcode) {
 
 		case 0xF: {
 			switch (NN){
+				case 0x0A: {
+					if (keys[0])
+						V[X] = 0;
+					else if (keys[1])
+						V[X] = 1;
+					else if (keys[2])
+						V[X] = 2;
+					else if (keys[3])
+						V[X] = 3;
+					else if (keys[4])
+						V[X] = 4;
+					else if (keys[5])
+						V[X] = 5;
+					else if (keys[6])
+						V[X] = 6;
+					else if (keys[7])
+						V[X] = 7;
+					else if (keys[8])
+						V[X] = 8;
+					else if (keys[9])
+						V[X] = 9;
+					else if (keys[10])
+						V[X] = 10;
+					else if (keys[11])
+						V[X] = 11;
+					else if (keys[12])
+						V[X] = 12;
+					else if (keys[13])
+						V[X] = 13;
+					else if (keys[14])
+						V[X] = 14;
+					else if (keys[15])
+						V[X] = 15;
+					else
+						PC -= 2;
+					break;
+				}
 				case 0x07: {
 					V[X] = delaytimer;
 					break;
