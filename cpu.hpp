@@ -21,13 +21,14 @@ public:
 	uint32_t pixels[64 * 32]{};
 
 	uint8_t memory[4096]{};
-	uint16_t PC = 0x200; // or 512
-	uint16_t I = 0;
+	uint8_t V[16]{};
 	std::stack<uint16_t> stack[16]{};
 
-	uint8_t delaytimer;
-	uint8_t soundtimer;
-	uint8_t V[16]{};
+	uint16_t PC = 0x200; // or 512
+	uint16_t I = 0;
+
+	uint8_t delaytimer = 0;
+	uint8_t soundtimer = 0;
 
 	//1 equals true and 0 equals false
 	//all values in list by are 0 default
@@ -53,8 +54,8 @@ public:
 	};
 
 	void getrom(const char* rom_path);
-	void opchecker(int16_t opcode);
-	void gameLoop();
+	void opchecker(uint16_t* opcode);
+	void gameLoop(int fps);
 };
 
 

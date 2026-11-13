@@ -17,8 +17,7 @@ int main(int argc, char *argv[]) {
 
 	//minus 2 because we need to iterate to the amount the PC does for now
 	while (true) {
-		components.gameLoop();
-		/*SDL_Delay(300);*/
+		components.gameLoop(60);
 	}
 
     //sdl stuff

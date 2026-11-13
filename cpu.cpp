@@ -29,36 +29,39 @@ void Components::getrom(const char* rom_path) {
 		std::cout << "No file found";
 }
 
-void Components::gameLoop(){
+void Components::gameLoop(int fps){
 	uint8_t* byte1 = &memory[PC];
 	uint8_t* byte2 = &memory[PC + 1];
 
 	uint16_t opcode = (*byte1 << 8) | *byte2;
 
-	opchecker(opcode);
+	opchecker(&opcode);
 
 	/*printf("\\x%.04x\n", opcode);*/
+
+	SDL_Delay(1000/fps);
 }
 
-void Components::opchecker(int16_t opcode) {
+void Components::opchecker(uint16_t* opcode) {
 
-	uint8_t first_value = (opcode & 0xf000) >> 12;
+	uint8_t first_value = (*opcode & 0xf000) >> 12;
 
-	uint8_t X = (opcode & 0x0f00) >> 8;
+	uint8_t X = (*opcode & 0x0f00) >> 8;
 
-	uint8_t Y = (opcode & 0x00f0) >> 4;
+	uint8_t Y = (*opcode & 0x00f0) >> 4;
 
-	uint8_t N = opcode & 0x000f;
+	uint8_t N = *opcode & 0x000f;
 
 	//these are larger than one byte so the need int16_t
-	uint16_t NN = opcode & 0x00ff;
+	uint16_t NN = *opcode & 0x00ff;
 
-	uint16_t NNN = opcode & 0x0fff;
+	uint16_t NNN = *opcode & 0x0fff;
 
-	if (opcode == 0x00E0) {
+	if (*opcode == 0x00E0) {
 		std::cout << "Clear Screen\n";
+		for (auto i : pixels) i = 0;
 	}
-	if (opcode == 0x00EE) {
+	if (*opcode == 0x00EE) {
 		std::cout << "Subroutine\n";
 		PC = stack->top();
 		stack->pop();
@@ -66,7 +69,7 @@ void Components::opchecker(int16_t opcode) {
 
 	switch (first_value) {
 		case 0x1:
-			//std::cout << "Jump\n";
+			/*std::cout << "Jump\n";*/
 			PC = NNN - 2;
 			break;
 
@@ -96,12 +99,12 @@ void Components::opchecker(int16_t opcode) {
 			break;
 
 		case 0x7:
-			std::cout << "add value to register VX\n";
+			std::cout << "added value to register VX\n";
 			V[X] = (V[X] + NN) & 0xFF;
 			break;
 
 		case 0xA:
-			std::cout << "add value to register VX\n";
+			std::cout << "added value to register VX\n";
 			I = NNN;
 			break;
 
@@ -132,7 +135,7 @@ void Components::opchecker(int16_t opcode) {
 							V[0xF] = 1;
 						}
 						*pixel = 0xFFFFFFFF;
-						std::cout << "Drew pixel at (" << x << ", " << y << "). \n";
+						/*std::cout << "Drew pixel at (" << currentx << ", " << currenty << "). \n";*/
 					}
 				}
 			}
@@ -144,6 +147,5 @@ void Components::opchecker(int16_t opcode) {
 
 			break;
 	}
-
 	PC += 2;
 }
