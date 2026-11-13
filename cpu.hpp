@@ -17,7 +17,8 @@ public:
 		texture = t;
 	}
 
-	int display[2] = {64, 32};
+	uint32_t display[2] = {64, 32};
+	uint32_t pixels[64 * 32]{};
 	uint8_t memory[4096]{};
 	uint16_t PC = 0x200; // or 512
 	uint16_t I = 0;

@@ -16,7 +16,7 @@ void Components::getrom(const char* rom_path) {
 		Rom.read(contents, size);
 		Rom.close();
 
-		for (auto i = 0; i < sizeof(characters_fonts); ++i)
+		for (auto i = 0; i < 80; ++i)
 			memory[i] = characters_fonts[i];
 
 		for (auto i = 0; i < size; ++i)
@@ -30,8 +30,8 @@ void Components::getrom(const char* rom_path) {
 }
 
 void Components::gameLoop(){
-	uint8_t *byte1 = &memory[PC];
-	uint8_t *byte2 = &memory[PC + 1];
+	uint8_t* byte1 = &memory[PC];
+	uint8_t* byte2 = &memory[PC + 1];
 
 	uint16_t opcode = (*byte1 << 8) | *byte2;
 
@@ -42,17 +42,18 @@ void Components::gameLoop(){
 
 void Components::opchecker(int16_t opcode) {
 
-	int8_t first_value = (opcode & 0xf000) >> 12;
+	uint8_t first_value = (opcode & 0xf000) >> 12;
 
-	int8_t X = (opcode & 0x0f00) >> 8;
+	uint8_t X = (opcode & 0x0f00) >> 8;
 
-	int8_t Y = (opcode & 0x00f0) >> 4;
+	uint8_t Y = (opcode & 0x00f0) >> 4;
 
-	int8_t N = opcode & 0x000f;
+	uint8_t N = opcode & 0x000f;
 
-	int8_t NN = opcode & 0x00ff;
+	//these are larger than one byte so the need int16_t
+	uint16_t NN = opcode & 0x00ff;
 
-	int8_t NNN = opcode & 0x0fff;
+	uint16_t NNN = opcode & 0x0fff;
 
 	if (opcode == 0x00E0) {
 		std::cout << "Clear Screen\n";
@@ -65,8 +66,16 @@ void Components::opchecker(int16_t opcode) {
 
 	switch (first_value) {
 		case 0x1:
-			std::cout << "Jump\n";
+			//std::cout << "Jump\n";
 			PC = NNN - 2;
+			break;
+		case 0x2:
+			PC = stack->top();
+			PC = NNN - 2;
+			break;
+		case 0x3:
+			if (V[X] == NN)
+				PC += 2;
 			break;
 		case 0x6:
 			std::cout << "set register VX\n";
@@ -81,43 +90,38 @@ void Components::opchecker(int16_t opcode) {
 			I = NNN;
 			break;
 		case 0xD:
-			/*int8_t x = V[X] % display[0];
-			int8_t y = V[Y] % display[1];
+			uint16_t x = V[X] % display[0];
+			uint16_t y = V[Y] % display[1];
 
 			V[0xF] = 0;
 
-			for (auto row = 0; row < N; row++) {
-				int8_t spriteByte = memory[I + row];
-				auto currenty = y + row;
-				if (currenty >= display[1]) 
-					continue;
+			for (uint8_t row = 0; row < N; ++row) {
+				uint8_t spriteByte = memory[I + row];
+				uint8_t currenty = (y + row);
+				if (currenty >= display[1]) break;
 
-				for (auto col = 0; col < 8; col++) {
-					auto currentx = x + col;
-					if (currentx >= display[0])
-						continue;
-					auto spriteBit = (spriteByte & (0x80 >> col));
+				for (uint8_t col = 0; col < 8; ++col) {
+					uint8_t currentx = (x + col);
+					if (currentx >= display[0]) break;
+
+					uint8_t spriteBit = (spriteByte & (0x80 >> col));
+					uint32_t* screenPixel = &pixels[currenty * display[0] + currentx];
 
 					if (spriteBit) {
-						SDL_Rect pixel = { currentx, currenty, 1, 1 };
-						SDL_Point point = { currentx , currenty };
-						if (SDL_PointInRect(&point, &pixel)) {
-							std::cout << "Black - ";
-							SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+						if (*screenPixel == 0xFFFFFFFF) {
 							V[0xF] = 1;
 						}
-						else {
-							std::cout << "White - ";
-							SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-						}
-						std::cout << "Drew pixel at (" << currentx << ", " << currenty << ")\n";
-						SDL_FRect pixel_f = { currentx, currenty, 1, 1 };
-						SDL_RenderFillRect(renderer, &pixel_f);
 
+						*screenPixel = 0xFFFFFFFF;
+						std::cout << "Drew pixel at (" << x << ", " << y << "). \n";
 					}
 				}
-			}*/
+			}
 
+			SDL_UpdateTexture(texture, nullptr, pixels, display[0] * sizeof(pixels[0]));
+			SDL_RenderClear(renderer);
+			SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+			SDL_RenderPresent(renderer);
 
 			break;
 	}

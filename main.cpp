@@ -13,30 +13,12 @@ int main(int argc, char *argv[]) {
 
 	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 
-	std::vector<uint32_t> pixels(64 * 32, 0x00000000);
-	for(auto i = 0; i < pixels.size(); i++){
-		if (i % 2 == 0) {
-			/*make sure 8 values for colors
-			first two Red, second two Green, third two Blue, last two Alpha*/
-			pixels[i] = 0xffffffff;
-		}
-	}
-
-	SDL_UpdateTexture(texture, nullptr, pixels.data(), 64 * sizeof(uint32_t));
-	SDL_RenderClear(renderer);
-
-	SDL_RenderTexture(renderer, texture, nullptr, nullptr);
-	
-	SDL_RenderPresent(renderer);
-
-	SDL_Delay(10000);
-
 	components.getrom("IBM Logo.ch8");
 
 	//minus 2 because we need to iterate to the amount the PC does for now
-	for (auto i = 0; i < std::size(components.memory) - 2; i++) {
+	while (true) {
 		components.gameLoop();
-		
+		/*SDL_Delay(300);*/
 	}
 
     //sdl stuff
