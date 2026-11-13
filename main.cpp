@@ -26,7 +26,11 @@ int main(int argc, char *argv[]) {
 	//Chip 8 logic
 	Components components(renderer, texture);
 
-	components.getrom("PONG");
+	if (argc > 1) 
+		components.getrom(argv[1]);
+	else
+		components.getrom("");
+
 	bool running = true;
 	while (running) {
 

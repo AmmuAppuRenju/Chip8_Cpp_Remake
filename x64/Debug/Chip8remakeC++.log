@@ -1,5 +1,4 @@
-﻿  cpu.cpp
-C:\Users\manav\source\repos\Chip8remakeC++\Chip8remakeC++\cpu.cpp(108,11): warning C4244: '=': conversion from 'uint16_t' to 'uint8_t', possible loss of data
+﻿  main.cpp
   Chip8remakeC++.vcxproj -> C:\Users\manav\source\repos\Chip8remakeC++\x64\Debug\Chip8remakeC++.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

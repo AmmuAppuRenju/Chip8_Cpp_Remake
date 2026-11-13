@@ -39,6 +39,9 @@ void Components::gameLoop(int fps){
 	if (delaytimer > 0)
 		delaytimer -= 1;
 
+	if (soundtimer > 0)
+		soundtimer -= 1;
+
 	opchecker(&opcode);
 
 	/*printf("\\x%.04x\n", opcode);*/
